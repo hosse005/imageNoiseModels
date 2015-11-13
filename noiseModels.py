@@ -1,10 +1,18 @@
-#!/usr/bin/python
+﻿#!/usr/bin/python
+
+#-----------------------------
+# File name: noiseModels.py
+# Author: Evan Hosseini
+# Date: 13 November 2015
+# Class: CS712
+# Assignment: Project 3
+#-----------------------------
 
 import sys
 import random
 import numpy as np
+import matplotlib.pyplot as plt
 from PIL import Image
-
 
 # Global parameters
 width = height = 256
@@ -25,6 +33,7 @@ def main():
     filename = 'circle.png'
     img.save(filename)
     print('Wrote base circle image to %s' % filename)
+    plotHistogram(circleData, 'Circle Histogram')
 
     # Add uniform noise to the circle image
     uniformCorruption = circleData + genUniformNoise() 
@@ -33,6 +42,7 @@ def main():
     filename = 'uniformCorruption.png'
     img.save(filename)
     print('Wrote uniformly corrupted image to file %s' % filename)
+    plotHistogram(np.uint8(uniformCorruption), 'Uniform Corruption Histogram')
 
     # Add salt and pepper noise to the image
     sltPepCorruption = circleData + genSaltPepperNoise()
@@ -40,13 +50,13 @@ def main():
     img = Image.fromarray(np.uint8(sltPepCorruption))
     filename = 'saltPepperCorruption.png'
     img.save(filename)
-    print('Wrote salt and pepper corrupted image to file %s' % filename)    
-                          
+    print('Wrote salt and pepper corrupted image to file %s' % filename)
+    plotHistogram(np.uint8(sltPepCorruption), 'Salt and Pepper Corruption Histogram')
 
 
 # Create a base circle of width x height and radius
 def createCircle():
-    data = np.zeros((width, height), dtype=np.uint8)
+    data = np.zeros((width, height))
 
     # Iterate through the image, and create a centered circle
     for (x,y), _ in np.ndenumerate(data):
@@ -82,12 +92,30 @@ def genSaltPepperNoise():
         
 # Image normalization to 0-255
 def normGrayscale(data):
-    ''' @param data : numpy array '''
+    ''' @param data : numpy 2d array '''
     min = data.min()
     max = data.max()
 
     for (x,y), value in np.ndenumerate(data):
-        data[x,y] = (value - min) * 255 / (max - min)
+        data[x,y] = np.uint8((value - min) * 255 / (max - min))
+
+
+# Histogram plotter
+def plotHistogram(data, title):
+    '''
+    @param data : numpy 2d array
+    @param title : string to place on histogram title and out filename
+    '''
+    num_bins = 256
+
+    plt.clf()
+    plt.hist(data.ravel(), num_bins, [0,256], facecolor='green', edgecolor='green')
+    plt.title(title)
+    plt.xlabel('Intensity value')
+    plt.ylabel('# of Occurances')
+
+    plt.savefig(title + '.png')
+    print('Wrote %s histogram to file %s.png' % (title, title))
 
 
 if __name__ == '__main__':
